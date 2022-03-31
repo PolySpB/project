@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.1.xsd">
+    <includeAll path="com/example/db/changelog/"/>
+
+    <changeSet id="init-dict-schema" author="polina">
+        <sql>
+            create schema dict;
+        </sql>
+    </changeSet>
+
+    <changeSet id="create-currency-id-seq" author="polina">
+        <createSequence sequenceName="currency-id-seq" schemaName="dict"/>
+    </changeSet>
+
+    <changeSet id="create-currency-table" author="polina">
+        <createTable tableName="currency" schemaName="dict">
+            <column name="id" type="integer" defaultValueComputed="nextval('dict.currency-id-seq')">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="currency" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="insert-currency-table-values" author="polina">
+        <sql>
+            insert into dict.currency (currency) values ('USD'), ('RUB'), ('EUR'), ('GBP');
+        </sql>
+    </changeSet>
+
+
+    <changeSet id="create-transaction-status-id-seq" author="polina">
+        <createSequence sequenceName="transaction-status-id-seq" schemaName="dict"/>
+    </changeSet>
+
+    <changeSet id="create-transaction-status-table" author="polina">
+        <createTable tableName="transaction_status" schemaName="dict">
+            <column name="id" type="integer" defaultValueComputed="nextval('dict.transaction-status-id-seq')">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="status" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="insert-transaction-status-table-values" author="polina">
+        <sql>
+            insert into dict.transaction_status (status) values ('PROCESSING'), ('SUCCESSFUL'), ('DECLINED');
+        </sql>
+    </changeSet>
+
+    <changeSet id="init-user-schema" author="polina">
+        <sql>
+            create schema users;
+        </sql>
+    </changeSet>
+
+    <changeSet id="create-user-id-seq" author="polina">
+        <createSequence sequenceName="user-id-seq" schemaName="users"/>
+    </changeSet>
+
+    <changeSet id="create-user-table" author="polina">
+        <createTable tableName="user" schemaName="users">
+            <column name="id" type="integer" defaultValueComputed="nextval('users.user-id-seq')">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="name" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="email" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="init-bank-schema" author="polina">
+        <sql>
+            create schema bank;
+        </sql>
+    </changeSet>
+
+    <changeSet id="create-bankbook-id-seq" author="polina">
+        <createSequence sequenceName="bankbook-id-seq" schemaName="bank"/>
+    </changeSet>
+
+    <changeSet id="create-bankbook-table" author="polina">
+        <createTable tableName="bankbook" schemaName="bank">
+            <column name="id" type="integer" defaultValueComputed="nextval('bank.bankbook-id-seq')">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="user_id" type="integer">
+                <constraints foreignKeyName="user_id_fkey" references="users.user(id)"/>
+            </column>
+            <column name="number" type="varchar">
+                <constraints nullable="false"/>
+            </column>
+            <column name="amount" type="decimal">
+                <constraints nullable="false"/>
+            </column>
+            <column name="currency_id" type="integer">
+                <constraints foreignKeyName="currency_id_fkey" references="dict.currency(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="create-transaction-id-seq" author="polina">
+        <createSequence sequenceName="transaction-id-seq" schemaName="bank"/>
+    </changeSet>
+
+    <changeSet id="create-transaction-table" author="polina">
+        <createTable tableName="transaction" schemaName="bank">
+            <column name="id" type="integer" defaultValueComputed="nextval('bank.transaction-id-seq')">
+                <constraints primaryKey="true" nullable="false" unique="true"/>
+            </column>
+            <column name="source_bank_book_id" type="integer">
+                <constraints foreignKeyName="source_bank_book_id_fkey" references="bank.bankbook(id)"/>
+            </column>
+            <column name="target_bank_book_id" type="integer">
+                <constraints foreignKeyName="target_bank_book_id_fkey" references="bank.bankbook(id)"/>
+            </column>
+            <column name="amount" type="decimal">
+                <constraints nullable="false"/>
+            </column>
+            <column name="initiation_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="completion_date" type="timestamp">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status_id" type="integer">
+                <constraints foreignKeyName="status_id_fkey" references="dict.transaction_status(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="insert-test-data" author="polina">
+        <sql>
+            insert into users.user (name, email) values ('testUser1', 'testUser1.com');
+            insert into users.user (name, email) values ('testUser2', 'testUser2.com');
+
+            insert into bank.bankbook (user_id, number, amount, currency_id) values (1, 'A1', 10000.00, 1);
+            insert into bank.bankbook (user_id, number, amount, currency_id) values (2, 'A2', 10000.00, 1);
+        </sql>
+    </changeSet>
+
+</databaseChangeLog>
